@@ -1,4 +1,5 @@
 module go_programs
+module github.com/priy-nhsu/GO
 
 go 1.22.2
 

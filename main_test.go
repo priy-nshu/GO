@@ -2,35 +2,52 @@ package main
 
 import (
 	"fmt"
-	"reflect"
 	"testing"
 )
 
-func TestTagMessages(t *testing.T) {
+func TestUpdateBalance(t *testing.T) {
 	type testCase struct {
-		messages []sms
-		expected [][]string
+		name            string
+		initialCustomer customer
+		transaction     transaction
+		expectedBalance float64
+		expectError     bool
+		errorMessage    string
 	}
 
 	runCases := []testCase{
 		{
-			messages: []sms{{id: "001", content: "Urgent, please respond!"}, {id: "002", content: "Big sale on all items!"}},
-			expected: [][]string{{"Urgent"}, {"Promo"}},
+			name:            "Deposit operation",
+			initialCustomer: customer{id: 1, balance: 100.0},
+			transaction:     transaction{customerID: 1, amount: 50.0, transactionType: transactionDeposit},
+			expectedBalance: 150.0,
+			expectError:     false,
 		},
 		{
-			messages: []sms{{id: "003", content: "Enjoy your day"}},
-			expected: [][]string{{}},
+			name:            "Withdrawal operation",
+			initialCustomer: customer{id: 2, balance: 200.0},
+			transaction:     transaction{customerID: 2, amount: 100.0, transactionType: transactionWithdrawal},
+			expectedBalance: 100.0,
+			expectError:     false,
 		},
 	}
 
 	submitCases := append(runCases, []testCase{
 		{
-			messages: []sms{{id: "004", content: "Sale! Don't miss out on these urgent promotions!"}},
-			expected: [][]string{{"Urgent", "Promo"}},
+			name:            "insufficient funds for withdrawal",
+			initialCustomer: customer{id: 3, balance: 50.0},
+			transaction:     transaction{customerID: 3, amount: 100.0, transactionType: transactionWithdrawal},
+			expectedBalance: 50.0,
+			expectError:     true,
+			errorMessage:    "insufficient funds",
 		},
 		{
-			messages: []sms{{id: "005", content: "i nEEd URgEnt help, my FROZEN FLAME was used"}, {id: "006", content: "wAnt to saLE 200x heavy leather"}},
-			expected: [][]string{{"Urgent"}, {"Promo"}},
+			name:            "unknown transaction type",
+			initialCustomer: customer{id: 4, balance: 100.0},
+			transaction:     transaction{customerID: 4, amount: 50.0, transactionType: "unknown"},
+			expectedBalance: 100.0,
+			expectError:     true,
+			errorMessage:    "unknown transaction type",
 		},
 	}...)
 
@@ -45,37 +62,40 @@ func TestTagMessages(t *testing.T) {
 	failCount := 0
 
 	for _, test := range testCases {
-		actual := tagMessages(test.messages, tagger)
-		if len(actual) != len(test.expected) {
-			failCount++
-			t.Errorf(`---------------------------------
-Test Failed for length of returned sms slice
-Expecting: %v
-Actual:    %v
-Fail
-`, len(test.expected), len(actual))
-			continue
-		}
+		t.Run(test.name, func(t *testing.T) {
+			err := updateBalance(&test.initialCustomer, test.transaction)
+			failureMessage := ""
 
-		for i, msg := range actual {
-			if !reflect.DeepEqual(msg.tags, test.expected[i]) {
+			if (err != nil) != test.expectError {
+				failureMessage += "Unexpected error presence: expected an error but didn't get one, or vice versa.\n"
+			} else if err != nil && err.Error() != test.errorMessage {
+				failureMessage += "Incorrect error message.\n"
+			}
+
+			if test.initialCustomer.balance != test.expectedBalance {
+				failureMessage += "Balance not updated as expected.\n"
+			}
+
+			if failureMessage != "" {
 				failCount++
+				failureMessage = "FAIL\n" + failureMessage +
+					"Transaction: " + string(test.transaction.transactionType) +
+					fmt.Sprintf(", Amount: %.2f\n", test.transaction.amount) +
+					fmt.Sprintf("Expected balance: %.2f, Actual balance: %.2f", test.expectedBalance, test.initialCustomer.balance)
 				t.Errorf(`---------------------------------
-Test Failed for message ID %s
-Expecting: %v
-Actual:    %v
-Fail
-`, msg.id, test.expected[i], msg.tags)
+				%s
+`, failureMessage)
 			} else {
 				passCount++
+				successMessage := "PASSED\n" +
+					"Transaction: " + string(test.transaction.transactionType) +
+					fmt.Sprintf(", Amount: %.2f\n", test.transaction.amount) +
+					fmt.Sprintf("Expected balance: %.2f, Actual balance: %.2f", test.expectedBalance, test.initialCustomer.balance)
 				fmt.Printf(`---------------------------------
-Test Passed for message ID %s
-Expecting: %v
-Actual:    %v
-Pass
-`, msg.id, test.expected[i], msg.tags)
+%s
+`, successMessage)
 			}
-		}
+		})
 	}
 
 	fmt.Println("---------------------------------")
@@ -84,9 +104,9 @@ Pass
 	} else {
 		fmt.Printf("%d passed, %d failed\n", passCount, failCount)
 	}
-
 }
 
 // withSubmit is set at compile time depending
 // on which button is used to run the tests
 var withSubmit = true
+

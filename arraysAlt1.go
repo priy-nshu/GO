@@ -1,6 +1,6 @@
 package main
 
-type Message interface {
+/*type Message interface {
 	Type() string
 }
 
@@ -43,4 +43,4 @@ func filterMessages(messages []Message, filterType string) []Message {
     }
     }
     return filtered
-}
+}*/
