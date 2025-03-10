@@ -5,105 +5,64 @@ import (
 	"testing"
 )
 
-func TestUpdateBalance(t *testing.T) {
+func Test(t *testing.T) {
 	type testCase struct {
-		name            string
-		initialCustomer customer
-		transaction     transaction
-		expectedBalance float64
-		expectError     bool
-		errorMessage    string
+		numDBs int
 	}
 
 	runCases := []testCase{
-		{
-			name:            "Deposit operation",
-			initialCustomer: customer{id: 1, balance: 100.0},
-			transaction:     transaction{customerID: 1, amount: 50.0, transactionType: transactionDeposit},
-			expectedBalance: 150.0,
-			expectError:     false,
-		},
-		{
-			name:            "Withdrawal operation",
-			initialCustomer: customer{id: 2, balance: 200.0},
-			transaction:     transaction{customerID: 2, amount: 100.0, transactionType: transactionWithdrawal},
-			expectedBalance: 100.0,
-			expectError:     false,
-		},
+		{1},
+		{3},
+		{4},
 	}
 
 	submitCases := append(runCases, []testCase{
-		{
-			name:            "insufficient funds for withdrawal",
-			initialCustomer: customer{id: 3, balance: 50.0},
-			transaction:     transaction{customerID: 3, amount: 100.0, transactionType: transactionWithdrawal},
-			expectedBalance: 50.0,
-			expectError:     true,
-			errorMessage:    "insufficient funds",
-		},
-		{
-			name:            "unknown transaction type",
-			initialCustomer: customer{id: 4, balance: 100.0},
-			transaction:     transaction{customerID: 4, amount: 50.0, transactionType: "unknown"},
-			expectedBalance: 100.0,
-			expectError:     true,
-			errorMessage:    "unknown transaction type",
-		},
+		{0},
+		{13},
 	}...)
 
 	testCases := runCases
 	if withSubmit {
 		testCases = submitCases
 	}
-
 	skipped := len(submitCases) - len(testCases)
 
-	passCount := 0
-	failCount := 0
+	passed, failed := 0, 0
 
 	for _, test := range testCases {
-		t.Run(test.name, func(t *testing.T) {
-			err := updateBalance(&test.initialCustomer, test.transaction)
-			failureMessage := ""
-
-			if (err != nil) != test.expectError {
-				failureMessage += "Unexpected error presence: expected an error but didn't get one, or vice versa.\n"
-			} else if err != nil && err.Error() != test.errorMessage {
-				failureMessage += "Incorrect error message.\n"
-			}
-
-			if test.initialCustomer.balance != test.expectedBalance {
-				failureMessage += "Balance not updated as expected.\n"
-			}
-
-			if failureMessage != "" {
-				failCount++
-				failureMessage = "FAIL\n" + failureMessage +
-					"Transaction: " + string(test.transaction.transactionType) +
-					fmt.Sprintf(", Amount: %.2f\n", test.transaction.amount) +
-					fmt.Sprintf("Expected balance: %.2f, Actual balance: %.2f", test.expectedBalance, test.initialCustomer.balance)
-				t.Errorf(`---------------------------------
-				%s
-`, failureMessage)
-			} else {
-				passCount++
-				successMessage := "PASSED\n" +
-					"Transaction: " + string(test.transaction.transactionType) +
-					fmt.Sprintf(", Amount: %.2f\n", test.transaction.amount) +
-					fmt.Sprintf("Expected balance: %.2f, Actual balance: %.2f", test.expectedBalance, test.initialCustomer.balance)
-				fmt.Printf(`---------------------------------
-%s
-`, successMessage)
-			}
-		})
+		fmt.Printf(`---------------------------------`)
+		fmt.Printf("\nTesting %v Databases...\n\n", test.numDBs)
+		dbChan, count := getDBsChannel(test.numDBs)
+		waitForDBs(test.numDBs, dbChan)
+		for *count != test.numDBs {
+			fmt.Println("...")
+		}
+		if len(dbChan) == 0 && *count == test.numDBs {
+			passed++
+			fmt.Printf(`
+expected length: 0, count: %v
+actual length:   %v, count: %v
+PASS
+`,
+				test.numDBs, len(dbChan), *count)
+		} else {
+			failed++
+			fmt.Printf(`
+expected length: 0, count: %v
+actual length:   %v, count: %v
+FAIL
+`,
+				test.numDBs, len(dbChan), *count)
+		}
 	}
 
 	fmt.Println("---------------------------------")
 	if skipped > 0 {
-		fmt.Printf("%d passed, %d failed, %d skipped\n", passCount, failCount, skipped)
+		fmt.Printf("%d passed, %d failed, %d skipped\n", passed, failed, skipped)
 	} else {
-		fmt.Printf("%d passed, %d failed\n", passCount, failCount)
+		fmt.Printf("%d passed, %d failed\n", passed, failed)
 	}
+
 }
 
 // withSubmit is set at compile time depending
