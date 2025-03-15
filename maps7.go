@@ -1,5 +1,5 @@
 package main
-
+/*
 const (
 	logDeleted  = "user deleted"
 	logNotFound = "user not found"
@@ -23,4 +23,4 @@ func logAndDelete(users map[string]user, name string) (log string) {
 	}
 	return logDeleted
 }
-
+*/

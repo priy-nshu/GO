@@ -1,5 +1,5 @@
 package main
-
+/*
 import (
 	"errors"
 )
@@ -39,4 +39,4 @@ func updateBalance(cust *customer,trans transaction) error{
    (*cust).balance -=trans.amount
   }
   return nil
-}
+}*/

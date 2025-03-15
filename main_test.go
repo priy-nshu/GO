@@ -2,25 +2,24 @@ package main
 
 import (
 	"fmt"
-	"slices"
 	"testing"
 )
 
-func Test(t *testing.T) {
+func TestEmailStatus(t *testing.T) {
 	type testCase struct {
-		n        int
-		expected []int
+		status   emailStatus
+		expected string
 	}
 
 	runCases := []testCase{
-		{5, []int{0, 1, 1, 2, 3}},
-		{3, []int{0, 1, 1}},
+		{emailBounced, "emailBounced"},
+		{emailInvalid, "emailInvalid"},
+		{emailDelivered, "emailDelivered"},
 	}
 
 	submitCases := append(runCases, []testCase{
-		{0, []int{}},
-		{1, []int{0}},
-		{7, []int{0, 1, 1, 2, 3, 5, 8}},
+		{emailOpened, "emailOpened"},
+		{17, "Unknown"},
 	}...)
 
 	testCases := runCases
@@ -34,23 +33,23 @@ func Test(t *testing.T) {
 	failCount := 0
 
 	for _, test := range testCases {
-		actual := concurrentFib(test.n)
-		if !slices.Equal(actual, test.expected) {
+		output := getEmailStatusName(test.status)
+		if output != test.expected {
 			failCount++
 			t.Errorf(`---------------------------------
 Test Failed:
-  n:        %v
+  status:   %v
   expected: %v
   actual:   %v
-`, test.n, test.expected, actual)
+`, test.status, test.expected, output)
 		} else {
 			passCount++
 			fmt.Printf(`---------------------------------
 Test Passed:
-  n:        %v
+  status:   %v
   expected: %v
   actual:   %v
-`, test.n, test.expected, actual)
+`, test.status, test.expected, output)
 		}
 	}
 
@@ -61,6 +60,21 @@ Test Passed:
 		fmt.Printf("%d passed, %d failed\n", passCount, failCount)
 	}
 
+}
+
+func getEmailStatusName(status emailStatus) string {
+	switch status {
+	case emailBounced:
+		return "emailBounced"
+	case emailInvalid:
+		return "emailInvalid"
+	case emailDelivered:
+		return "emailDelivered"
+	case emailOpened:
+		return "emailOpened"
+	default:
+		return "Unknown"
+	}
 }
 
 // withSubmit is set at compile time depending

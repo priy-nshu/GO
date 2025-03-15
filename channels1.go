@@ -1,5 +1,5 @@
 package main
-
+/*
 import (
 	"fmt"
 	"time"
@@ -26,4 +26,4 @@ func main() {
 	test("Hi there Shallan!")
 	test("Hey there Dalinar!")
 }
-
+*/
