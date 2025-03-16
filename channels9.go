@@ -1,5 +1,5 @@
 package main
-
+/*
 import (
 	"fmt"
 	"time"
@@ -54,4 +54,4 @@ func main() {
 	test(4)
 	test(3)
 	test(2)
-}
+}*/
