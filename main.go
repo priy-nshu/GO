@@ -1,22 +1,39 @@
 package main
 
-import (
-	"fmt"
-	"log"
-    "go_programs/client"
+/*import(
+    "log"
 )
+*/
 
-const issueURL = "https://api.boot.dev/v1/courses_rest_api/learn-http/issues"
-
+import (
+    "go_programs/client"
+    "net/url"
+)
+/*
 func main() {
-	issues, err := client.GetIssueData(issueURL)
+	issues, err := client.GetIssues(client.Domain)
 	if err != nil {
-		log.Fatalf("error getting issue data: %v", err)
+		log.Fatalf("error getting issues data: %v", err)
 	}
-	prettyData, err := client.Prettify(string(issues))
-	if err != nil {
-		log.Fatalf("error prettifying data: %v", err)
-	}
-	fmt.Println(prettyData)
-}
+	client.LogIssues(issues)
+}*/
 
+func NewParsedURL(urlString string) ParsedURL {
+	parsedUrl, err := url.Parse(urlString)
+	if err != nil {
+		return ParsedURL{}
+	}
+
+	password, _ := parsedUrl.User.Password()
+
+	return ParsedURL{
+		Protocol: parsedUrl.Scheme,
+		Username: parsedUrl.User.Username(),
+		Password: password,
+		Hostname: parsedUrl.Hostname(),
+		Port:     parsedUrl.Port(),
+		Pathname: parsedUrl.Path,
+		Search:   parsedUrl.RawQuery,
+		Hash:     parsedUrl.Fragment,
+	}
+}

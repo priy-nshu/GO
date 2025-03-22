@@ -1,5 +1,5 @@
 package client
-
+/*
 import (
 	"fmt"
 	"net/http"
@@ -22,4 +22,4 @@ func getIssues(url string) ([]Issue, error) {
 	}
 	return issue,nil
 }
-
+*/
