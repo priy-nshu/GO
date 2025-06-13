@@ -1,39 +1,15 @@
 package main
 
-/*import(
-    "log"
-)
-*/
-
 import (
-    "go_programs/client"
-    "net/url"
+	"log"
+	"go_programs/client"
 )
-/*
+
 func main() {
-	issues, err := client.GetIssues(client.Domain)
+	url := "https://api.boot.dev/v1/courses_rest_api/learn-http/users"
+	users, err := client.GetUsers(url)
 	if err != nil {
-		log.Fatalf("error getting issues data: %v", err)
+		log.Fatal("Error getting users:", err)
 	}
-	client.LogIssues(issues)
-}*/
-
-func NewParsedURL(urlString string) ParsedURL {
-	parsedUrl, err := url.Parse(urlString)
-	if err != nil {
-		return ParsedURL{}
-	}
-
-	password, _ := parsedUrl.User.Password()
-
-	return ParsedURL{
-		Protocol: parsedUrl.Scheme,
-		Username: parsedUrl.User.Username(),
-		Password: password,
-		Hostname: parsedUrl.Hostname(),
-		Port:     parsedUrl.Port(),
-		Pathname: parsedUrl.Path,
-		Search:   parsedUrl.RawQuery,
-		Hash:     parsedUrl.Fragment,
-	}
+	client.LogUsers(users)
 }

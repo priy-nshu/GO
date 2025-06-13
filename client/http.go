@@ -1,6 +1,5 @@
 package client
 
-
 import (
 	"bytes"
 	"encoding/json"
@@ -15,7 +14,7 @@ type Project struct {
 	Assignees int    `json:"assignees"`
 }
 
-func generateKey() string {
+func GenerateKey() string {
 	const characters = "ABCDEF0123456789"
 	result := ""
 	rand.New(rand.NewSource(0))
@@ -25,7 +24,7 @@ func generateKey() string {
 	return result
 }
 
-func getProjectResponse(apiKey, url string) (Project, error) {
+func GetProjectResponse(apiKey, url string) (Project, error) {
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -49,7 +48,7 @@ func getProjectResponse(apiKey, url string) (Project, error) {
 	return project, nil
 }
 
-func putProject(apiKey, url string, project Project) error {
+func PutProject(apiKey, url string, project Project) error {
 	client := &http.Client{}
 	data, err := json.Marshal(project)
 	if err != nil {
